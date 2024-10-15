@@ -1,12 +1,15 @@
 package main
 
 import (
+	"encoding/json"
+	"log"
+	"net/http"
+	"os"
+	"time"
+
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
-	"os"
-	"time"
 )
 
 type User struct {
@@ -35,7 +38,7 @@ type Follow struct {
 	CreatedAt  time.Time `gorm:"autoCreateTime"`
 }
 
-func main() {
+func initDB() *gorm.DB {
 	dsn := os.Getenv("DB_URL")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -45,4 +48,32 @@ func main() {
 	db.AutoMigrate(&Post{})
 	db.AutoMigrate(&Follow{})
 	println("test!!")
+	return db
+}
+
+func setupRoutes(db *gorm.DB) *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /users", GetUsersHandler(db))
+	return mux
+}
+
+func main() {
+	db := initDB()
+	mux := setupRoutes(db)
+	log.Println("Server running on port 8000")
+	if err := http.ListenAndServe(":8000", mux); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
+}
+
+func GetUsersHandler(db *gorm.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var users []User
+		if result := db.Find(&users); result.Error != nil {
+			http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-type", "application/json")
+		json.NewEncoder(w).Encode(users)
+	}
 }
