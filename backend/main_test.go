@@ -12,7 +12,7 @@ import (
 )
 
 func setupTestDB(t *testing.T) *gorm.DB {
-	dsn := "host=localhost port=5555 user=postgres password=password dbname=test_db sslmode=disable"
+	dsn := "host=localhost port=5432 user=dawn_user password=dawn_password dbname=dawn_db sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	require.NoError(t, err)
 
@@ -28,13 +28,13 @@ func CreateTestUsers(t *testing.T, db *gorm.DB) {
 	users := []User{
 		{
 			Name:     "Gem",
-			Email:    "example@mail.com",
+			Email:    "example1@mail.com",
 			Password: "test",
 			Bio:      &bio,
 		},
 		{
 			Name:     "Mma",
-			Email:    "example2@mail.com",
+			Email:    "example8@mail.com",
 			Password: "test2",
 			Bio:      &bio2,
 		},
@@ -52,17 +52,17 @@ func TestGetUsersHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", "/users", nil)
 	require.NoError(t, err)
 
-	rr := httptest.NewRecorder()
+	rec := httptest.NewRecorder()
 
 	handler := GetUsersHandler(db)
-	handler.ServeHTTP(rr, req)
+	handler.ServeHTTP(rec, req)
 
-	require.Equal(t, http.StatusOK, rr.Code)
+	require.Equal(t, http.StatusOK, rec.Code)
 
 	var users []User
-	err = json.Unmarshal(rr.Body.Bytes(), &users)
+	err = json.Unmarshal(rec.Body.Bytes(), &users)
 	require.NoError(t, err)
 	require.Len(t, users, 2)
-	require.Equal(t, "Gen", users[0].Name)
+	require.Equal(t, "Gem", users[0].Name)
 	require.Equal(t, "Mma", users[1].Name)
 }

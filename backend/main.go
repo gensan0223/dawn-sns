@@ -54,6 +54,7 @@ func initDB() *gorm.DB {
 func setupRoutes(db *gorm.DB) *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /users", GetUsersHandler(db))
+	mux.HandleFunc("POST /posts", CreatePostHandler(db))
 	return mux
 }
 
@@ -75,5 +76,35 @@ func GetUsersHandler(db *gorm.DB) http.HandlerFunc {
 		}
 		w.Header().Set("Content-type", "application/json")
 		json.NewEncoder(w).Encode(users)
+	}
+}
+func CreatePostHandler(db *gorm.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var user = User{ID: 1}
+
+		var requestPost Post
+		err := json.NewDecoder(r.Body).Decode(&requestPost)
+		if err != nil {
+			http.Error(w, "リクエストの解析に失敗しました", http.StatusBadRequest)
+			return
+		}
+		if requestPost.Content == "" {
+			http.Error(w, "コンテンツがありません", http.StatusBadRequest)
+			return
+		}
+
+		post := Post{
+			UserID:  user.ID,
+			Content: requestPost.Content,
+		}
+		db.Create(&post)
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		err = json.NewEncoder(w).Encode(post)
+		if err != nil {
+			http.Error(w, "レスポンス作成に失敗しました", http.StatusInternalServerError)
+			return
+		}
 	}
 }
