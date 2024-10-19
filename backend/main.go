@@ -78,23 +78,25 @@ func GetUsersHandler(db *gorm.DB) http.HandlerFunc {
 		json.NewEncoder(w).Encode(users)
 	}
 }
-func CreatePostHandler(db *gorm.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var user = User{ID: 1}
 
+func CreatePostHandler(db *gorm.DB) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
 		var requestPost Post
 		err := json.NewDecoder(r.Body).Decode(&requestPost)
+
 		if err != nil {
 			http.Error(w, "リクエストの解析に失敗しました", http.StatusBadRequest)
 			return
 		}
+
 		if requestPost.Content == "" {
 			http.Error(w, "コンテンツがありません", http.StatusBadRequest)
 			return
 		}
 
 		post := Post{
-			UserID:  user.ID,
+			UserID:  requestPost.UserID,
 			Content: requestPost.Content,
 		}
 		db.Create(&post)

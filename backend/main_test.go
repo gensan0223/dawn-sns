@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -17,6 +18,7 @@ func setupTestDB(t *testing.T) *gorm.DB {
 	require.NoError(t, err)
 
 	err = db.AutoMigrate(&User{})
+	err = db.AutoMigrate(&Post{})
 	require.NoError(t, err)
 
 	return db
@@ -65,4 +67,19 @@ func TestGetUsersHandler(t *testing.T) {
 	require.Len(t, users, 2)
 	require.Equal(t, "Gem", users[0].Name)
 	require.Equal(t, "Mma", users[1].Name)
+}
+func TestCreatePostHandler(t *testing.T) {
+	testPost := Post{
+		UserID:  1,
+		Content: "test content",
+	}
+	reqBody, _ := json.Marshal(testPost)
+	req, err := http.NewRequest("POST", "/posts", bytes.NewBuffer(reqBody))
+	require.NoError(t, err)
+
+	rec := httptest.NewRecorder()
+	db := setupTestDB(t)
+	handler := CreatePostHandler(db)
+	handler.ServeHTTP(rec, req)
+	require.Equal(t, http.StatusOK, rec.Code)
 }
