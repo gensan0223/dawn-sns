@@ -82,4 +82,13 @@ func TestCreatePostHandler(t *testing.T) {
 	handler := CreatePostHandler(db)
 	handler.ServeHTTP(rec, req)
 	require.Equal(t, http.StatusOK, rec.Code)
+
+	var createdPost Post
+	err = json.NewDecoder(rec.Body).Decode(&createdPost)
+	if err != nil {
+		t.Fatalf("Could not decode response: %v", err)
+	}
+
+	require.Equal(t, testPost.UserID, createdPost.UserID)
+	require.Equal(t, testPost.Content, createdPost.Content)
 }
