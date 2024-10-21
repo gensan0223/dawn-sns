@@ -23,7 +23,7 @@ func RandomString(length int) string {
 	return str
 }
 
-func RondomBio(length int) *string {
+func RandomBio(length int) *string {
 	bio := RandomString(length)
 	return &bio
 }

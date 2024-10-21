@@ -32,7 +32,7 @@ func CreateTestUser(t *testing.T, db *gorm.DB) (*User, error) {
 		Name:     util.RandomString(5),
 		Email:    util.RandomEmail(5),
 		Password: util.RandomString(10),
-		Bio:      util.RondomBio(20),
+		Bio:      util.RandomBio(20),
 	}
 	err := db.Create(&user).Error
 	if err != nil {
@@ -79,7 +79,7 @@ func TestCreateUserHandler(t *testing.T) {
 		Name:     util.RandomString(5),
 		Email:    util.RandomEmail(8),
 		Password: util.RandomString(10),
-		Bio:      util.RondomBio(20),
+		Bio:      util.RandomBio(20),
 	}
 	reqBody, err := json.Marshal(&user)
 
