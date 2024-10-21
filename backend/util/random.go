@@ -2,6 +2,7 @@ package util
 
 import (
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -20,4 +21,16 @@ func StringWithCharset(length int, charset string) string {
 func RandomString(length int) string {
 	str := StringWithCharset(length, charset)
 	return str
+}
+
+func RandomBio(length int) *string {
+	bio := RandomString(length)
+	return &bio
+}
+
+func RandomEmail(length int) string {
+	var emailBuilder strings.Builder
+	emailBuilder.WriteString(RandomString(length))
+	emailBuilder.WriteString("@mail.com")
+	return emailBuilder.String()
 }
