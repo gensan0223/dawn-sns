@@ -28,6 +28,7 @@ func initDB() *gorm.DB {
 func setupRoutes(db *gorm.DB) *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /users", handler.GetUsersHandler(db))
+	mux.HandleFunc("GET /users/{id}", handler.GetUserHandler(db))
 	mux.HandleFunc("POST /users", handler.CreateUserHandler(db))
 	mux.HandleFunc("POST /posts", handler.CreatePostHandler(db))
 	return mux

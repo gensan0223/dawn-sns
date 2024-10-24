@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -36,6 +37,30 @@ func CreateTestUsers(t *testing.T, count int, db *gorm.DB) []model.User {
 		users = append(users, *user)
 	}
 	return users
+}
+
+func TestGetUserHandler(t *testing.T) {
+	db := testutils.SetupTestDB(t)
+
+	testUser, _ := CreateTestUser(t, db)
+	idStr := strconv.FormatUint(uint64(testUser.ID), 10)
+	getUserHandlerURL := "/users/" + idStr
+
+	req, err := http.NewRequest("GET", getUserHandlerURL, nil)
+	require.NoError(t, err)
+
+	rec := httptest.NewRecorder()
+	handler := GetUserHandler(db)
+	handler.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+
+	var user model.User
+	err = json.Unmarshal(rec.Body.Bytes(), &user)
+	require.NoError(t, err)
+	require.Equal(t, testUser.Name, user.Name)
+	require.Equal(t, testUser.Email, user.Email)
+	require.Equal(t, testUser.CreatedAt, user.CreatedAt)
 }
 
 func TestGetUsersHandler(t *testing.T) {

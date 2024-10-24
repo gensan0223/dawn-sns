@@ -9,6 +9,19 @@ import (
 	"gorm.io/gorm"
 )
 
+func GetUserHandler(db *gorm.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		var user model.User
+		if result := db.First(&user, id); result.Error != nil {
+			http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-type", "application/json")
+		json.NewEncoder(w).Encode(user)
+	}
+}
+
 func GetUsersHandler(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var users []model.User
